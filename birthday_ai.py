@@ -156,8 +156,8 @@ class Chatbot:
             birthday = " ".join(chatbot.person_data[selected_person].get('birthday').split()[:2])
 
             if today == birthday:
-                self.add_to_history_bot_fisrt(f"สุขสันต์วันเกิดค่ะ ท่าน{chatbot.person_data[selected_person].get('nickname')} ขอให้วันนี้เป็นวันที่ดีสำหรับท่านค่ะ! \n ไม่ทราบว่าวันนี้ต้องการอะไรหรอกคะ?", '-')
-                bot = update_chat_history("", f"สุขสันต์วันเกิดค่ะ ท่าน{chatbot.person_data[selected_person].get('nickname')} ขอให้วันนี้เป็นวันที่ดีสำหรับท่านค่ะ! \n ไม่ทราบว่าวันนี้ต้องการอะไรหรอกคะ?")
+                self.add_to_history_bot_fisrt(f"สุขสันต์วันเกิดค่ะ ท่าน {chatbot.person_data[selected_person].get('name')} ขอให้วันนี้เป็นวันที่ดีสำหรับท่านค่ะ! \n ไม่ทราบว่าวันนี้ต้องการอะไรหรอกคะ?", '-')
+                bot = update_chat_history("", f"สุขสันต์วันเกิดค่ะ ท่าน {chatbot.person_data[selected_person].get('name')} ขอให้วันนี้เป็นวันที่ดีสำหรับท่านค่ะ! \n ไม่ทราบว่าวันนี้ต้องการอะไรหรอกคะ?")
                 display_chat()
                 time.sleep(bot)
                 st.session_state["bot_state"] = "active"
