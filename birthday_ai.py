@@ -533,7 +533,7 @@ if selected == "Home":
         birthday = " ".join(info['birthday'].split()[:2])
         display_name = f"ท่าน {info['name']}"
         if birthday == today:
-            display_name += " --เกิดวันนี้--"
+            display_name += f"  :rainbow[--เกิดวันนี้--]"
             display_names_today.append(display_name)
             person_keys_today.append(person_id)
         else:
