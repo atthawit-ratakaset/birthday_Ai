@@ -554,7 +554,6 @@ if selected == "Home":
 
     with col2:
         status_placeholder = st.empty()
-        update_status_display()
 
     st.write("")
     microphone_st = speech_to_text(start_prompt="🎤 Talking", stop_prompt="Stop Talking", language='th', use_container_width=True, just_once=True, key='STT')
@@ -562,16 +561,24 @@ if selected == "Home":
     chat_placeholder = st.empty()
 
     if selected_person:
-        st.session_state['user_selected'] = chatbot.person_data.get(selected_person, {})
-        st.session_state['messages'] = []
-        st.session_state.text_received = []
-        st.session_state['last_bot_state'] = ""
-        st.session_state['unknown_question'] = None
-        st.session_state['learning_answer'] = None
-        st.session_state['updateInfo_stage'] = None
-        display_chat()
-        st.session_state['bot_state'] = ""
-        update_status_display()
+        if st.session_state['user_selected'] == None:
+            st.session_state['user_selected'] = chatbot.person_data.get(selected_person, {})
+            update_status_display()
+        else:
+            if st.session_state['user_selected'] != chatbot.person_data.get(selected_person, {}):
+                st.session_state['bot_state'] = ""
+                st.session_state['last_bot_state'] = ""
+                update_status_display()
+                st.session_state['user_selected'] = chatbot.person_data.get(selected_person, {})
+                st.session_state['messages'] = []
+                st.session_state.text_received = []
+                st.session_state['last_bot_state'] = ""
+                st.session_state['unknown_question'] = None
+                st.session_state['learning_answer'] = None
+                st.session_state['updateInfo_stage'] = None
+                display_chat()
+            else:
+                update_status_display()
 
     col3, col4, col5, col6, col7 = st.columns([1,1,1,1,1])
     with col3:
