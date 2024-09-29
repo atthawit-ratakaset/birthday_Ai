@@ -569,6 +569,14 @@ if selected == "Home":
                 st.session_state['bot_state'] = ""
                 st.session_state['last_bot_state'] = ""
                 update_status_display()
+                st.session_state['user_selected'] = chatbot.person_data.get(selected_person, {})
+                st.session_state['messages'] = []
+                st.session_state.text_received = []
+                st.session_state['last_bot_state'] = ""
+                st.session_state['unknown_question'] = None
+                st.session_state['learning_answer'] = None
+                st.session_state['updateInfo_stage'] = None
+                display_chat()
             else:
                 update_status_display()
 
