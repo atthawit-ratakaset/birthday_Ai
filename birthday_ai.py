@@ -84,7 +84,7 @@ class Chatbot:
         return value
 
     def show_history_json_as_table(self, user_name, json_data, user_id):
-        st.markdown(f"<h2 style='font-size:20px;'>ประวัติสนทนาของ {user_name}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='font-size:20px;'>ประวัติสนทนาของ{user_name}</h2>", unsafe_allow_html=True)
         user_history = [entry for entry in json_data if entry.get('user_id') == user_id]
         
         if user_history:
@@ -101,7 +101,7 @@ class Chatbot:
             
             st.dataframe(df, use_container_width=True, hide_index=True)
         else:
-            st.write("ไม่มีประวัติการสนทนาของผู้ใช้รายนี้")
+            st.write("ไม่มีประวัติการสนทนาของอาจารย์ท่านนี้")
 
     def add_to_history(self, user_input, bot_input):
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -166,6 +166,7 @@ class Chatbot:
                       'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']
             
             today = f"{datetime.now().day} {months[datetime.now().month - 1]}"
+
             birthday = " ".join(chatbot.person_data[selected_person].get('birthday').split()[:2])
 
             if today == birthday:
@@ -1135,7 +1136,7 @@ elif selected == "Show history":
 
 elif selected == "Add personal data":
     status = st.empty()
-    st.write("เพิ่มข้อมูลส่วนตัว")
+    st.markdown(f"<h2 style='font-size:28px;'>เพิ่มข้อมูลอาจารย์</h2>", unsafe_allow_html=True)
     name = st.text_input("ชื่อ", value="", key="add_name")
     nickname = st.text_input("ชื่อเล่น", value="", key="add_nickname")
     birthday = st.text_input("วันเกิด", value="", key="add_birthday")
@@ -1163,7 +1164,7 @@ elif selected == "Add personal data":
     st.button("บันทึกข้อมูล", on_click=clear_input)
         
 elif selected == "Show personal data":
-    st.write("แก้ไขข้อมูลส่วนตัว")
+    st.markdown(f"<h2 style='font-size:28px;'>แก้ไขข้อมูลอาจารย์</h2>", unsafe_allow_html=True)
 
     chatbot.person_data = chatbot.load_person_data()
 
