@@ -154,7 +154,7 @@ class Chatbot:
         return audio_html
 
     def get_thai_date(self, offset):
-        target_date = datetime.now() + timedelta(days=offset)
+        target_date = datetime.now() + timedelta(hours=7, days=offset)
         months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
                   'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']
         thai_year = target_date.year + 543
@@ -165,7 +165,7 @@ class Chatbot:
             months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
                       'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']
             
-            today = f"{datetime.now().day} {months[datetime.now().month - 1]}"
+            today = f"{(datetime.now() + timedelta(hours=7)).day} {months[(datetime.now() + timedelta(hours=7)).month - 1]}"
 
             birthday = " ".join(chatbot.person_data[selected_person].get('birthday').split()[:2])
 
