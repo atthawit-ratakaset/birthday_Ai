@@ -536,7 +536,7 @@ if selected == "Home":
 
     months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
           'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']
-    today = f"{datetime.now().day} {months[datetime.now().month - 1]}"
+    today = f"{(datetime.now() + timedelta(hours=7)).day} {months[(datetime.now() + timedelta(hours=7)).month - 1]}"
 
     display_names_today = []
     display_names_others = []
