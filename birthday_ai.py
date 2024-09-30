@@ -11,6 +11,7 @@ import pandas as pd
 from streamlit_mic_recorder import speech_to_text
 from streamlit_option_menu import option_menu
 from ai_thinking import calculate_ai, word_translator
+import requests
 
 class Chatbot:
     def __init__(self):
@@ -57,6 +58,34 @@ class Chatbot:
     def save_person_data(self):
         with open("data_birthday.json", "w", encoding="utf-8") as file:
             json.dump(self.person_data, file, ensure_ascii=False, indent=4)
+
+    def fetch_data_from_api(self, api_url):
+        try:
+            response = requests.get(api_url)
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, dict):
+                    formatted_data = self.format_api_data(data)
+                    self.person_data.update(formatted_data)
+                    self.save_person_data()
+                    st.toast("API data fetched and saved successfully.")
+                else:
+                    st.toast("Error: Unexpected data format received from the API.")
+            else:
+                st.toast(f"Failed to fetch data from API. Status code: {response.status_code}")
+        except Exception as e:
+            st.toast(f"Error fetching data from API: {e}")
+
+    def format_api_data(self, data):
+        formatted_data = {}
+        for person_id, item in data.items():
+            formatted_data[person_id] = {
+                'name': item.get("name", ""),
+                'school': item.get("school", ""),
+                'birthday': item.get("birthday", ""),
+                'role': item.get("role", "อาจารย์")
+            }
+        return formatted_data
 
     def load_history(self):
         try:
@@ -352,6 +381,14 @@ class Chatbot:
         update_status_display()
 
 chatbot = Chatbot()
+chatbot.person_data = chatbot.load_person_data()
+
+
+if "api_fetch_data" not in st.session_state:
+    st.session_state["api_fetch_data"] = True
+    api_url = "http://bangkok-service.net/bkkservices/employee/get_teacher_data.php"
+    chatbot.fetch_data_from_api(api_url)
+    st.session_state["api_fetch_data"] = False
 
 #before bot process bot_state
 if 'last_bot_state' not in st.session_state:
@@ -1140,9 +1177,10 @@ elif selected == "Add personal data":
     st.markdown(f"<h2 style='font-size:28px;'>เพิ่มข้อมูลอาจารย์</h2>", unsafe_allow_html=True)
     name = st.text_input("ชื่อ", value="", key="add_name")
     school = st.text_input("โรงเรียน", value="", key="add_school")
+    role = st.radio("ตำแหน่ง", options=["ผู้อำนวยการ", "อาจารย์"], key="add_role")
     birthday = st.text_input("วันเกิด", value="", key="add_birthday")
 
-    def clear_input(name, school, birthday):
+    def clear_input(name, school, birthday, role):
         if not name or not school or not birthday:
             status.error("กรุณากรอกข้อมูลให้ครบทุกช่อง")
             time.sleep(1)
@@ -1158,7 +1196,8 @@ elif selected == "Add personal data":
         chatbot.person_data[new_person_id] = {
             'name': name,
             'school': school,
-            'birthday': birthday
+            'birthday': birthday,
+            'role' : role
         }
         chatbot.save_person_data()
         st.session_state["add_name"] = ""
@@ -1168,52 +1207,53 @@ elif selected == "Add personal data":
         time.sleep(0.5)
         status.empty()
 
-    st.button("บันทึกข้อมูล", on_click=clear_input, args=(name, school, birthday))
+    st.button("บันทึกข้อมูล", on_click=clear_input, args=(name, school, birthday, role))
         
 elif selected == "Show personal data":
-    st.markdown(f"<h2 style='font-size:28px;'>แก้ไขข้อมูลอาจารย์</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='font-size:28px;'>ดู/แก้ไขข้อมูลอาจารย์</h2>", unsafe_allow_html=True)
 
-    chatbot.person_data = chatbot.load_person_data()
+    if not chatbot.person_data:
+        st.write("วันนี้ไม่มีอาจารย์ท่านไหนเกิด")
+    else:
+        display_names = [f"ท่าน {info['name']} --{info['school']}--" for info in chatbot.person_data.values()]
+        person_ids = list(chatbot.person_data.keys())
+        id_name_mapping = {f"ท่าน {info['name']} --{info['school']}--": person_id for person_id, info in chatbot.person_data.items()}
 
-    display_names = [f"ท่าน {info['name']} --{info['school']}--" for info in chatbot.person_data.values()]
-    person_ids = list(chatbot.person_data.keys())
+        selected_display_name = st.selectbox("เลือกบุคคลที่ต้องการแก้ไขข้อมูล", display_names)
 
-    id_name_mapping = {f"ท่าน {info['name']} --{info['school']}--": person_id for person_id, info in chatbot.person_data.items()}
+        selected_person = id_name_mapping[selected_display_name]
 
-    selected_display_name = st.selectbox("เลือกบุคคลที่ต้องการแก้ไขข้อมูล", display_names)
+        if selected_person:
+            st.session_state['upadate_user_selected'] = selected_person
+            person_info = chatbot.person_data.get(selected_person, {})
+            status = st.empty()
+            name = st.text_input("ชื่อ", value=person_info.get('name', ''))
+            school = st.text_input("โรงเรียน", value=person_info.get('school', ''))
+            role = st.radio("ตำแหน่ง", options=["ผู้อำนวยการ", "อาจารย์"], index=0 if person_info.get('role') == "ผู้อำนวยการ" else 1)
+            birthday = st.text_input("วันเกิด", value=person_info.get('birthday', ''))
 
-    selected_person = id_name_mapping[selected_display_name]
-    
-    if selected_person:
-        st.session_state['upadate_user_selected'] = selected_person
-        person_info = chatbot.person_data.get(selected_person, {})
-        status = st.empty()
-        name = st.text_input("ชื่อ", value=person_info.get('name', ''))
-        school = st.text_input("โรงเรียน", value=person_info.get('school', ''))
-        birthday = st.text_input("วันเกิด", value=person_info.get('birthday', ''))
+            def save_new_info(name, school, birthday, role):
+                if not name or not school or not birthday:
+                    status.error("กรุณากรอกข้อมูลให้ครบทุกช่อง")
+                    time.sleep(1)
+                    status.empty()
+                    return False
 
-        def save_new_info(name, school, birthday):
-            if not name or not school or not birthday:
-                status.error("กรุณากรอกข้อมูลให้ครบทุกช่อง")
-                time.sleep(1)
+                if not school.startswith("โรงเรียน"):
+                    school = "โรงเรียน" + school
+
+                chatbot.person_data[selected_person] = {
+                    'name': name,
+                    'school': school,
+                    'birthday': birthday,
+                    'role': role
+                }
+                chatbot.save_person_data() 
+                status.success("Success!")
+                time.sleep(0.5)
                 status.empty()
-                return False
+                return True
 
-            if not school.startswith("โรงเรียน"):
-                school = "โรงเรียน" + school
-
-            chatbot.person_data[selected_person] = {
-                'name': name,
-                'school': school,
-                'birthday': birthday
-            }
-            chatbot.save_person_data() 
-            status.success("Success!")
-            time.sleep(0.5)
-            status.empty()
-            return True
-
-        if st.button("บันทึกข้อมูล"):
-            if save_new_info(name, school, birthday):
-                st.rerun()
-        
+            if st.button("บันทึกข้อมูล"):
+                if save_new_info(name, school, birthday, role):
+                    st.rerun()
