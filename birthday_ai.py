@@ -575,6 +575,9 @@ if selected == "Home":
                   'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']
         today = f"{(datetime.now() + timedelta(hours=7)).day} {months[(datetime.now() + timedelta(hours=7)).month - 1]}"
 
+        st.write("")
+        microphone_st = speech_to_text(start_prompt="🎤 Talking", stop_prompt="Stop Talking", language='th', use_container_width=True, just_once=True, key='STT')
+        
         display_names_today = []
         display_names_others = []
         person_keys_today = []
@@ -605,10 +608,7 @@ if selected == "Home":
 
         with col2:
             status_placeholder = st.empty()
-
-        st.write("")
-        microphone_st = speech_to_text(start_prompt="🎤 Talking", stop_prompt="Stop Talking", language='th', use_container_width=True, just_once=True, key='STT')
-
+            
         chat_placeholder = st.empty()
 
         if selected_person:
