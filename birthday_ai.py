@@ -84,7 +84,7 @@ class Chatbot:
         return value
 
     def show_history_json_as_table(self, user_name, json_data, user_id, user_school):
-        st.markdown(f"<h2 style='font-size:20px;'>ประวัติสนทนาของ{user_name} {user_school}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='font-size:20px;'>ประวัติสนทนาของ{user_name}<br>{user_school}</br></h2>", unsafe_allow_html=True)
         user_history = [entry for entry in json_data if entry.get('user_id') == user_id]
         
         if user_history:
