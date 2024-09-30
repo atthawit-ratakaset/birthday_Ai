@@ -83,18 +83,30 @@ class Chatbot:
             return ', '.join(map(str, value)) 
         return value
 
-    def show_history_json_as_table(self, json_data, title):
-        st.write(f"### {title}")
-        df = pd.DataFrame(json_data)
-        df.index += 1
-        df = df.rename(columns={'timestamp': 'Timestamp', 'bot_input': 'Bot Input', 'user_input': 'User Input'})
-        if self.history != []:
+    def show_history_json_as_table(self, user_name, json_data, user_id):
+        st.markdown(f"<h2 style='font-size:28px;'>ประวัติการสนทนาของ {user_name}</h2>", unsafe_allow_html=True)
+        user_history = [entry for entry in json_data if entry.get('user_id') == user_id]
+        
+        if user_history:
+            df = pd.DataFrame(user_history)
+            df.index += 1
+            df = df.rename(columns={
+                'timestamp': 'Timestamp', 
+                'bot_input': 'Bot Input', 
+                'user_input': 'User Input'
+            })
             df['Bot Input'] = df['Bot Input'].apply(self.convert_list_to_string)
-        st.dataframe(df)
+            if 'user_id' in df.columns:
+                df = df.drop(columns=['user_id'])
+            
+            st.dataframe(df, use_container_width=True, hide_index=True)
+        else:
+            st.write("ไม่มีประวัติการสนทนาของผู้ใช้รายนี้")
 
     def add_to_history(self, user_input, bot_input):
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.history.append({
+            "user_id": selected_person,
             "timestamp": timestamp,
             "user_input": user_input,
             "bot_input": bot_input
@@ -104,6 +116,7 @@ class Chatbot:
     def add_to_history_bot_fisrt(self, bot_input, user_input):
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.history.append({
+            "user_id": selected_person,
             "timestamp": timestamp,
             "bot_input": bot_input,
             "user_input": user_input
@@ -156,8 +169,8 @@ class Chatbot:
             birthday = " ".join(chatbot.person_data[selected_person].get('birthday').split()[:2])
 
             if today == birthday:
-                self.add_to_history_bot_fisrt(f"สุขสันต์วันเกิดค่ะ ท่าน {chatbot.person_data[selected_person].get('name')} ขอให้วันนี้เป็นวันที่ดีสำหรับท่านค่ะ! \n ไม่ทราบว่าวันนี้ต้องการอะไรหรอกคะ?", '-')
-                bot = update_chat_history("", f"สุขสันต์วันเกิดค่ะ ท่าน {chatbot.person_data[selected_person].get('name')} ขอให้วันนี้เป็นวันที่ดีสำหรับท่านค่ะ! \n ไม่ทราบว่าวันนี้ต้องการอะไรหรอกคะ?")
+                self.add_to_history_bot_fisrt(f"สุขสันต์วันเกิดค่ะ ท่าน{chatbot.person_data[selected_person].get('name')} ขอให้วันนี้เป็นวันที่ดีสำหรับท่านค่ะ! \n ไม่ทราบว่าวันนี้ต้องการอะไรหรอกคะ?", '-')
+                bot = update_chat_history("", f"สุขสันต์วันเกิดค่ะ ท่าน{chatbot.person_data[selected_person].get('name')} ขอให้วันนี้เป็นวันที่ดีสำหรับท่านค่ะ! \n ไม่ทราบว่าวันนี้ต้องการอะไรหรอกคะ?")
                 display_chat()
                 time.sleep(bot)
                 st.session_state["bot_state"] = "active"
@@ -500,7 +513,7 @@ with st.sidebar:
         menu_title= "Menu",
         options=["Home", 
                 "Show history", 
-                "Show responses", 
+                "Add personal data", 
                 "Show personal data"],
         icons=["wechat", "clock-history", "database", "file-person"],
         menu_icon=["house-door-fill"],
@@ -570,8 +583,6 @@ if selected == "Home":
                 st.session_state['last_bot_state'] = ""
                 update_status_display()
                 st.session_state['user_selected'] = chatbot.person_data.get(selected_person, {})
-                st.session_state['messages'] = []
-                st.session_state.text_received = []
                 st.session_state['last_bot_state'] = ""
                 st.session_state['unknown_question'] = None
                 st.session_state['learning_answer'] = None
@@ -592,7 +603,6 @@ if selected == "Home":
     with col7:
         sound_placeholder5 = st.empty()
     display_chat()
-
 
     #when process interupt
     if st.session_state['bot_state'] == "prepare":
@@ -1117,12 +1127,41 @@ if selected == "Home":
                     update_status_display()
 
 elif selected == "Show history":
-    chatbot.show_history_json_as_table(chatbot.history, "Chat History")
+    user_data = chatbot.load_person_data()
+    user_id = st.selectbox("เลือกอาจารย์", options=list(user_data.keys()), format_func=lambda x: f"ท่าน {user_data[x]['name']}")
 
-elif selected == "Show responses":
-    st.write("Showing responses data")
-    chatbot.show_json(chatbot.responses, "responses.json")
+    if user_id:
+        chatbot.show_history_json_as_table(f"ท่าน {user_data[user_id]['name']}", chatbot.history, user_id)
 
+elif selected == "Add personal data":
+    status = st.empty()
+    st.write("เพิ่มข้อมูลส่วนตัว")
+    name = st.text_input("ชื่อ", value="", key="add_name")
+    nickname = st.text_input("ชื่อเล่น", value="", key="add_nickname")
+    birthday = st.text_input("วันเกิด", value="", key="add_birthday")
+
+    def clear_input():
+        if not name or not nickname or not birthday:
+            status.error("กรุณากรอกข้อมูลให้ครบทุกช่อง")
+            time.sleep(1)
+            status.empty()
+            return
+        new_person_id = f"{len(chatbot.person_data) + 1}"
+        chatbot.person_data[new_person_id] = {
+            'name': name,
+            'nickname': nickname,
+            'birthday': birthday
+        }
+        chatbot.save_person_data()
+        st.session_state["add_name"] = ""
+        st.session_state["add_nickname"] = ""
+        st.session_state["add_birthday"] = ""
+        status.success("บันทึกสำเร็จ!")
+        time.sleep(0.5)
+        status.empty()
+
+    st.button("บันทึกข้อมูล", on_click=clear_input)
+        
 elif selected == "Show personal data":
     st.write("แก้ไขข้อมูลส่วนตัว")
 
@@ -1153,5 +1192,5 @@ elif selected == "Show personal data":
             }
             chatbot.save_person_data() 
             st.success("Success!")
-            time.sleep(1)
+            time.sleep(0.5)
             st.rerun()
