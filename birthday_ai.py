@@ -1210,6 +1210,7 @@ elif selected == "Add personal data":
     st.button("บันทึกข้อมูล", on_click=clear_input, args=(name, school, birthday, role))
         
 elif selected == "Show personal data":
+    chatbot.person_data = chatbot.load_person_data()
     st.markdown(f"<h2 style='font-size:28px;'>ดู/แก้ไขข้อมูลอาจารย์</h2>", unsafe_allow_html=True)
 
     if not chatbot.person_data:
