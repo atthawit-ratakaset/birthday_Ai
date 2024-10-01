@@ -332,7 +332,6 @@ class Chatbot:
         st.session_state['last_bot_state'] = ""
         st.session_state['unknown_question'] = None
         st.session_state['learning_answer'] = None
-        st.session_state["auto_start"] = False
         st.session_state['updateInfo_stage'] = None
         display_chat()
         self.greet()
@@ -574,7 +573,6 @@ with st.sidebar:
     )
 
 if selected == "Home":
-    print(st.session_state["auto_start"])
     st.markdown(
         """
         <h1 style='text-align: center;'>🤖 Chatbot AI</h1>
@@ -667,7 +665,6 @@ if selected == "Home":
                     st.session_state['unknown_question'] = None
                     st.session_state['learning_answer'] = None
                     st.session_state['updateInfo_stage'] = None
-                    st.session_state["auto_start"] = False
                     display_chat()
                 else:
                     update_status_display()
