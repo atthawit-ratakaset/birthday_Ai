@@ -114,7 +114,7 @@ class Chatbot:
 
     def show_history_json_as_table(self, user_name, json_data, user_id, user_school):
         st.markdown(f"<h2 style='font-size:20px;'>ประวัติสนทนาของ{user_name}<br>{user_school}</br></h2>", unsafe_allow_html=True)
-        user_history = [entry for entry in json_data if entry.get('user_id') == f"{user_id}_{self.person_data[user_id].get('name')}"]
+        user_history = [entry for entry in json_data if entry.get('user_id') == f"{self.person_data[user_id].get('name')}"]
         
         if user_history:
             df = pd.DataFrame(user_history)
@@ -135,7 +135,7 @@ class Chatbot:
     def add_to_history(self, user_input, bot_input):
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.history.append({
-            "user_id": f"{selected_person}_{self.person_data[selected_person].get('name')}",
+            "user_id": f"{self.person_data[selected_person].get('name')}",
             "timestamp": timestamp,
             "user_input": user_input,
             "bot_input": bot_input
@@ -145,7 +145,7 @@ class Chatbot:
     def add_to_history_bot_fisrt(self, bot_input, user_input):
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.history.append({
-            "user_id": f"{selected_person}_{self.person_data[selected_person].get('name')}",
+            "user_id": f"{self.person_data[selected_person].get('name')}",
             "timestamp": timestamp,
             "bot_input": bot_input,
             "user_input": user_input
