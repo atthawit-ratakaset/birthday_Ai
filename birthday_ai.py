@@ -604,13 +604,12 @@ if selected == "Home":
             )
 
         def audio_text(microphone_st):
-            recognizer = sr.Recognizer()
-            audio_file = sr.AudioFile(io.BytesIO(microphone_st))
-
-            with audio_file as source:
-                audio_data = recognizer.record(source)
-
             try:
+                recognizer = sr.Recognizer()
+                audio_file = sr.AudioFile(io.BytesIO(microphone_st))
+                with audio_file as source:
+                    audio_data = recognizer.record(source)
+                    
                 text = recognizer.recognize_google(audio_data, language="th-TH")
                 return text
             except sr.UnknownValueError:
