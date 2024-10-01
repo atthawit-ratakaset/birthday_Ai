@@ -393,6 +393,8 @@ class Chatbot:
 chatbot = Chatbot()
 chatbot.person_data = chatbot.load_person_data()
 
+if 'auto_start' not in st.session_state:
+    st.session_state["auto_start"] = False
 
 #api load data
 if "api_fetch_data" not in st.session_state:
