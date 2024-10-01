@@ -802,7 +802,7 @@ if selected == "Home":
                             display_chat()
                             time.sleep(bot)
                             st.session_state["bot_state"] = "active"
-                            update_status_display(
+                            update_status_display()
                         elif "ใช่" in text or text == "ครับ" or text == "คะ" or text == "ค่ะ" or "ต้องการ" in text:
                             st.session_state['last_bot_state'] = "learning_mode"
                             update_chat_history(text, "")
