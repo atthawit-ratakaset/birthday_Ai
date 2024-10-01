@@ -600,7 +600,8 @@ if selected == "Home":
                 icon_name="headphones",
                 icon_size="7x",
                 pause_threshold=1.0,
-                sample_rate=44100
+                sample_rate=44100,
+                auto_start=True
             )
 
         def audio_text(microphone_st):
