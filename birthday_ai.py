@@ -8,10 +8,13 @@ import base64
 from mutagen.mp3 import MP3
 import tempfile
 import pandas as pd
-from streamlit_mic_recorder import speech_to_text
+from audio_recorder_streamlit import audio_recorder
+import speech_recognition as sr
+import io
 from streamlit_option_menu import option_menu
 from ai_thinking import calculate_ai, word_translator
 import requests
+from auto_click import click_start_mic
 
 class Chatbot:
     def __init__(self):
@@ -115,7 +118,6 @@ class Chatbot:
     def show_history_json_as_table(self, user_name, json_data, user_id, user_school):
         st.markdown(f"<h2 style='font-size:20px;'>ประวัติสนทนาของ{user_name}<br>{user_school}</br></h2>", unsafe_allow_html=True)
         user_history = [entry for entry in json_data if entry.get('user_id') == f"{self.person_data[user_id].get('name')}"]
-        
         if user_history:
             df = pd.DataFrame(user_history)
             df.index += 1
@@ -206,6 +208,7 @@ class Chatbot:
                 time.sleep(bot)
                 st.session_state["bot_state"] = "active"
                 update_status_display()
+                click_start_mic()
             else:
                 self.add_to_history_bot_fisrt("ไม่ทราบว่าวันนี้ต้องการอะไรหรอกคะ?", '-')
                 bot = update_chat_history("", "ไม่ทราบว่าวันนี้ต้องการอะไรหรอกคะ?")
@@ -213,6 +216,7 @@ class Chatbot:
                 time.sleep(bot)
                 st.session_state["bot_state"] = "active"
                 update_status_display()
+                click_start_mic()
 
     def get_time(self):
         now = datetime.now() + timedelta(hours=7) # for build
@@ -343,6 +347,7 @@ class Chatbot:
             time.sleep(bot)
             st.session_state['bot_state'] = "greeting"
             update_status_display()
+            click_start_mic()
 
     def review_person_data(self):
         st.session_state['last_bot_state'] = "comfirmInfo"
@@ -359,7 +364,7 @@ class Chatbot:
                 text = 'โรงเรียน'
             elif field == 'birthday':
                 text = 'วันเกิด'
-            data = chatbot.person_data[selected_person].get(field, 'ไม่ทราบ')
+            data = self.person_data[selected_person].get(field, 'ไม่ทราบ')
             list_data.append(f"{text}: {data}")
             st.session_state['comfirmInfo_response'] += f"{text}: {data}\n"
         
@@ -370,6 +375,7 @@ class Chatbot:
 
         st.session_state['bot_state'] = "comfirmInfo"
         update_status_display()
+        click_start_mic()
 
     def update_person_data(self):
         st.session_state['last_bot_state'] = "changeInfo"
@@ -381,11 +387,12 @@ class Chatbot:
         time.sleep(bot)
         st.session_state['bot_state'] = "changeInfo"
         update_status_display()
+        click_start_mic()
 
 chatbot = Chatbot()
 chatbot.person_data = chatbot.load_person_data()
 
-
+#api load data
 if "api_fetch_data" not in st.session_state:
     st.session_state["api_fetch_data"] = True
     api_url = "http://bangkok-service.net/bkkservices/employee/get_teacher_data.php"
@@ -579,13 +586,38 @@ if selected == "Home":
         month = months[(datetime.now() + timedelta(hours=7)).month - 1]
         today = f"{day} {month}"
 
-        st.write("")
-        microphone_st = speech_to_text(start_prompt="🎤 Talking", stop_prompt="Stop Talking", language='th', use_container_width=True, just_once=True, key='STT')
-        
         display_names_today = []
         display_names_others = []
         person_keys_today = []
         person_keys_others = []
+
+        se1, se2 = st.columns([1, 1.5])
+
+        with se2:
+            microphone_st = audio_recorder(
+                text="",
+                recording_color="#e8b62c",
+                neutral_color="#6aa36f",
+                icon_name="headphones",
+                icon_size="7x",
+                pause_threshold=1.0,
+                sample_rate=44100
+            )
+
+        def audio_text(microphone_st):
+            recognizer = sr.Recognizer()
+            audio_file = sr.AudioFile(io.BytesIO(microphone_st))
+
+            with audio_file as source:
+                audio_data = recognizer.record(source)
+
+            try:
+                text = recognizer.recognize_google(audio_data, language="th-TH")
+                return text
+            except sr.UnknownValueError:
+                st.toast("Could not understand the audio.")
+            except sr.RequestError as e:
+                st.toast(f"Error with the speech recognition service: {e}")
 
         for person_id, info in chatbot.person_data.items():
             birthday = " ".join(info['birthday'].split()[:2])
@@ -612,7 +644,7 @@ if selected == "Home":
 
         with col2:
             status_placeholder = st.empty()
-            
+
         chat_placeholder = st.empty()
 
         if selected_person:
@@ -659,7 +691,8 @@ if selected == "Home":
                 pass
 
             elif st.session_state["bot_state"] == "active":
-                st.session_state.text_received.append(microphone_st)
+                audio_txt = audio_text(microphone_st)
+                st.session_state.text_received.append(audio_txt)
                 text = st.session_state.text_received[-1]
                 if text: 
                     st.session_state['last_bot_state'] = "active"
@@ -688,15 +721,18 @@ if selected == "Home":
                         time.sleep(bot)
                         st.session_state["bot_state"] = "learning_confirm"
                         update_status_display()
+                        click_start_mic()
                     else:
                         bot = update_chat_history("",chatbot_response)
                         display_chat()
                         time.sleep(bot)
                         st.session_state["bot_state"] = "active"
                         update_status_display()
+                        click_start_mic()
             
             elif st.session_state["bot_state"] == "learning_confirm":
-                st.session_state.text_received.append(microphone_st)
+                audio_txt = audio_text(microphone_st)
+                st.session_state.text_received.append(audio_txt)
                 text = st.session_state.text_received[-1]
                 if text:
                     if st.session_state['updateInfo_stage'] == "comfirmUpdate_learning":
@@ -714,6 +750,7 @@ if selected == "Home":
                             time.sleep(bot)
                             st.session_state['bot_state'] = "learning_mode"
                             update_status_display()
+                            click_start_mic()
                             
                         elif "ใช่" in text or text == "ครับ" or text == "คะ" or text == "ค่ะ" or "ถูก" in text:
                             st.session_state['updateInfo_stage'] = None
@@ -736,6 +773,7 @@ if selected == "Home":
                             time.sleep(bot)
                             st.session_state['bot_state'] = "active"
                             update_status_display()
+                            click_start_mic()
 
                         else:
                             st.session_state['updateInfo_stage'] = "comfirmUpdate_learning"
@@ -750,6 +788,7 @@ if selected == "Home":
                             time.sleep(bot)
                             st.session_state["bot_state"] = "learning_confirm"
                             update_status_display()
+                            click_start_mic()
                             
                     else:
                         if "ไม่ต้องการ" in text or "ไม่อยากสอน" in text or text == "ไม่" or "ไม่สอน" in text or "ไม่ครับ" in text or "ไม่คะ" in text or "ไม่ค่ะ" in text:
@@ -765,6 +804,7 @@ if selected == "Home":
                             time.sleep(bot)
                             st.session_state["bot_state"] = "active"
                             update_status_display() 
+                            click_start_mic()
                         elif "ใช่" in text or text == "ครับ" or text == "คะ" or text == "ค่ะ" or "ต้องการ" in text:
                             st.session_state['last_bot_state'] = "learning_mode"
                             update_chat_history(text, "")
@@ -778,6 +818,7 @@ if selected == "Home":
                             time.sleep(bot)
                             st.session_state["bot_state"] = "learning_mode"
                             update_status_display()
+                            click_start_mic()
                         else:
                             st.session_state['last_bot_state'] = "learning_confirm"
                             update_chat_history(text, "")
@@ -790,9 +831,11 @@ if selected == "Home":
                             time.sleep(bot)
                             st.session_state['bot_state'] = "learning_confirm"
                             update_status_display()
+                            click_start_mic()
 
             elif st.session_state["bot_state"] == "learning_mode":
-                st.session_state.text_received.append(microphone_st)
+                audio_txt = audio_text(microphone_st)
+                st.session_state.text_received.append(audio_txt)
                 text = st.session_state.text_received[-1]
                 if text:
                     st.session_state['last_bot_state'] = "learning_confirm"
@@ -808,9 +851,11 @@ if selected == "Home":
                     time.sleep(bot)
                     st.session_state["bot_state"] = "learning_confirm"
                     update_status_display()
+                    click_start_mic()
 
             elif st.session_state["bot_state"] == "greeting":
-                st.session_state.text_received.append(microphone_st)
+                audio_txt = audio_text(microphone_st)
+                st.session_state.text_received.append(audio_txt)
                 text = st.session_state.text_received[-1]
                 if text:
                     if "ไม่ใช่" in text or "ผิด" in text or text == "ไม่" or "ไม่ครับ" in text or "ไม่คะ" in text or "ไม่ค่ะ" in text:
@@ -825,6 +870,7 @@ if selected == "Home":
                         time.sleep(bot)
                         st.session_state["bot_state"] = "new_name"
                         update_status_display()
+                        click_start_mic()
                     elif "ใช่" in text or text == "ครับ" or text == "คะ" or text == "ค่ะ":
                         st.session_state['last_bot_state'] = "active"
                         st.session_state["bot_state"] = "prepare"
@@ -846,9 +892,11 @@ if selected == "Home":
                         time.sleep(bot)
                         st.session_state['bot_state'] = "greeting"
                         update_status_display()
+                        click_start_mic()
 
             elif st.session_state["bot_state"] == "new_name":
-                st.session_state.text_received.append(microphone_st)
+                audio_txt = audio_text(microphone_st)
+                st.session_state.text_received.append(audio_txt)
                 text = st.session_state.text_received[-1]
                 if text:
                     if st.session_state['updateInfo_stage'] == "name":
@@ -870,6 +918,7 @@ if selected == "Home":
                         time.sleep(bot)
                         st.session_state["bot_state"] = "comfirmInfo"
                         update_status_display()
+                        click_start_mic()
                     else:
                         st.session_state['last_bot_state'] = "new_school"
                         st.session_state["bot_state"] = "prepare"
@@ -887,9 +936,11 @@ if selected == "Home":
                         time.sleep(bot)
                         st.session_state["bot_state"] = "new_school"
                         update_status_display()
+                        click_start_mic()
 
             elif st.session_state["bot_state"] == "new_school":
-                st.session_state.text_received.append(microphone_st)
+                audio_txt = audio_text(microphone_st)
+                st.session_state.text_received.append(audio_txt)
                 text = st.session_state.text_received[-1]
                 if text:
                     if st.session_state['updateInfo_stage'] == "school":
@@ -912,6 +963,7 @@ if selected == "Home":
                         time.sleep(bot)
                         st.session_state["bot_state"] = "comfirmInfo"
                         update_status_display()
+                        click_start_mic()
                     else:
                         st.session_state['last_bot_state'] = "new_birthday"
                         update_chat_history(text, "")
@@ -930,9 +982,11 @@ if selected == "Home":
                         time.sleep(bot)
                         st.session_state["bot_state"] = "new_birthday"
                         update_status_display()
+                        click_start_mic()
 
             elif st.session_state["bot_state"] == "new_birthday":
-                st.session_state.text_received.append(microphone_st)
+                audio_txt = audio_text(microphone_st)
+                st.session_state.text_received.append(audio_txt)
                 text = st.session_state.text_received[-1]
                 if text:
                     if st.session_state['updateInfo_stage'] == "birthday":
@@ -954,6 +1008,7 @@ if selected == "Home":
                         time.sleep(bot)
                         st.session_state["bot_state"] = "comfirmInfo"
                         update_status_display()
+                        click_start_mic()
                     else:
                         st.session_state['last_bot_state'] = "comfirmInfo"
                         st.session_state["bot_state"] = "prepare"
@@ -972,7 +1027,8 @@ if selected == "Home":
                         chatbot.review_person_data()
             
             elif st.session_state["bot_state"] == "comfirmInfo":
-                st.session_state.text_received.append(microphone_st)
+                audio_txt = audio_text(microphone_st)
+                st.session_state.text_received.append(audio_txt)
                 text = st.session_state.text_received[-1]
                 if text:
                     if st.session_state['updateInfo_stage'] == "comfirmUpdate_name" or st.session_state['updateInfo_stage'] == "comfirmUpdate_school" or st.session_state['updateInfo_stage'] == "comfirmUpdate_birthday":
@@ -990,6 +1046,7 @@ if selected == "Home":
                                 time.sleep(bot)
                                 st.session_state['bot_state'] = "new_name"
                                 update_status_display()
+                                click_start_mic()
                             elif st.session_state['updateInfo_stage'] == "comfirmUpdate_school":
                                 st.session_state['last_bot_state'] = "new_school"
                                 st.session_state['updateInfo_stage'] = "school"
@@ -999,6 +1056,7 @@ if selected == "Home":
                                 time.sleep(bot)
                                 st.session_state['bot_state'] = "new_school"
                                 update_status_display()
+                                click_start_mic()
                             elif st.session_state['updateInfo_stage'] == "comfirmUpdate_birthday":
                                 st.session_state['last_bot_state'] = "new_birthday"
                                 st.session_state['updateInfo_stage'] = "birthday"
@@ -1008,6 +1066,7 @@ if selected == "Home":
                                 time.sleep(bot)
                                 st.session_state['bot_state'] = "new_birthday"
                                 update_status_display()
+                                click_start_mic()
 
                         elif "ใช่" in text or text == "ครับ" or text == "คะ" or text == "ค่ะ" or "ถูก" in text:
                             st.session_state['last_bot_state'] = "active"
@@ -1065,6 +1124,7 @@ if selected == "Home":
                                 time.sleep(bot)
                             st.session_state['bot_state'] = "comfirmInfo"
                             update_status_display()
+                            click_start_mic()
                     else:
                         if "ขออีก" in text or "ทวน" in text or "พูดอีก" in text or "พูดใหม่" in text or "ขอใหม่" in text:
                             update_chat_history(text, "")
@@ -1080,6 +1140,7 @@ if selected == "Home":
                             time.sleep(bot)
                             st.session_state['bot_state'] = "comfirmInfo"
                             update_status_display()
+                            click_start_mic()
 
                         if "ไม่ถูก" in text or "ไม่ใช่" in text or text == "ไม่" or "ไม่ครับ" in text or "ไม่คะ" in text or "ไม่ค่ะ" in text:
                             update_chat_history(text, "")
@@ -1114,9 +1175,11 @@ if selected == "Home":
                             time.sleep(bot)
                             st.session_state['bot_state'] = "comfirmInfo"
                             update_status_display()
+                            click_start_mic()
 
             elif st.session_state["bot_state"] == "changeInfo":
-                st.session_state.text_received.append(microphone_st)
+                audio_txt = audio_text(microphone_st)
+                st.session_state.text_received.append(audio_txt)
                 text = st.session_state.text_received[-1]
                 if text:
                     if "โรงเรียน" in text:
@@ -1132,6 +1195,7 @@ if selected == "Home":
                         time.sleep(bot)
                         st.session_state["bot_state"] = "new_school"
                         update_status_display()
+                        click_start_mic()
                     elif "วันเกิด" in text:
                         st.session_state['last_bot_state'] = "new_birthday"
                         st.session_state['updateInfo_stage'] = "birthday"
@@ -1145,6 +1209,7 @@ if selected == "Home":
                         time.sleep(bot)
                         st.session_state["bot_state"] = "new_birthday"
                         update_status_display()
+                        click_start_mic()
                     elif "ชื่อ" in text:
                         st.session_state['last_bot_state'] = "new_name"
                         st.session_state['updateInfo_stage'] = "name"
@@ -1158,6 +1223,7 @@ if selected == "Home":
                         time.sleep(bot)
                         st.session_state["bot_state"] = "new_name"
                         update_status_display()
+                        click_start_mic()
                     else:
                         st.session_state['last_bot_state'] = "changeInfo"
                         update_chat_history(text, "")
@@ -1171,11 +1237,11 @@ if selected == "Home":
                         time.sleep(bot)
                         st.session_state['bot_state'] = "changeInfo"
                         update_status_display()
+                        click_start_mic()
 
     else:
         st.write("ไม่มีข้อมูลอาจารย์ในระบบตอนนี้")
 
-    
 elif selected == "Show history":
     user_data = chatbot.load_person_data()
     user_id = st.selectbox("เลือกอาจารย์", options=list(user_data.keys()), format_func=lambda x: f"ท่าน {user_data[x]['name']} --{user_data[x]['school']}--")
