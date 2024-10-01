@@ -194,7 +194,9 @@ class Chatbot:
             months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 
                       'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']
             
-            today = f"{(datetime.now() + timedelta(hours=7)).day} {months[(datetime.now() + timedelta(hours=7)).month - 1]}"
+            day = str((datetime.now() + timedelta(hours=7)).day).zfill(2)
+            month = months[(datetime.now() + timedelta(hours=7)).month - 1]
+            today = f"{day} {month}"
             birthday = " ".join(chatbot.person_data[selected_person].get('birthday').split()[:2])
 
             if today == birthday:
@@ -573,7 +575,9 @@ if selected == "Home":
     if chatbot.person_data:
         months = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
                   'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']
-        today = f"{(datetime.now() + timedelta(hours=7)).day} {months[(datetime.now() + timedelta(hours=7)).month - 1]}"
+        day = str((datetime.now() + timedelta(hours=7)).day).zfill(2)
+        month = months[(datetime.now() + timedelta(hours=7)).month - 1]
+        today = f"{day} {month}"
 
         st.write("")
         microphone_st = speech_to_text(start_prompt="🎤 Talking", stop_prompt="Stop Talking", language='th', use_container_width=True, just_once=True, key='STT')
