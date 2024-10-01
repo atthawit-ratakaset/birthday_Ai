@@ -614,9 +614,9 @@ if selected == "Home":
                 text = recognizer.recognize_google(audio_data, language="th-TH")
                 return text
             except sr.UnknownValueError:
-                st.toast("Could not understand the audio.")
+                pass
             except sr.RequestError as e:
-                st.toast(f"Error with the speech recognition service: {e}")
+                pass
 
         for person_id, info in chatbot.person_data.items():
             birthday = " ".join(info['birthday'].split()[:2])
