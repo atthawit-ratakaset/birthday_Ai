@@ -14,6 +14,7 @@ import io
 from streamlit_option_menu import option_menu
 from ai_thinking import calculate_ai, word_translator
 import requests
+from auto_click import click_start_mic
 
 class Chatbot:
     def __init__(self):
