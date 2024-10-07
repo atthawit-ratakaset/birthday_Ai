@@ -208,16 +208,14 @@ class Chatbot:
                 display_chat()
                 time.sleep(bot)
                 st.session_state["bot_state"] = "active"
-                status_text = update_status_display()
-                return status_text
+                update_status_display()
             else:
                 self.add_to_history_bot_fisrt("ไม่ทราบว่าวันนี้ต้องการอะไรหรอกคะ?", '-')
                 bot = update_chat_history("", "ไม่ทราบว่าวันนี้ต้องการอะไรหรอกคะ?")
                 display_chat()
                 time.sleep(bot)
                 st.session_state["bot_state"] = "active"
-                status_text = update_status_display()
-                return status_text
+                update_status_display()
             
     def get_time(self):
         now = datetime.now() + timedelta(hours=7) # for build
@@ -348,10 +346,7 @@ class Chatbot:
             display_chat()
             time.sleep(bot)
             st.session_state['bot_state'] = "greeting"
-            status_text = update_status_display()
-            if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                    st.rerun()
+            update_status_display()
 
     def review_person_data(self):
         st.session_state['last_bot_state'] = "comfirmInfo"
@@ -378,8 +373,7 @@ class Chatbot:
         time.sleep(bot)
 
         st.session_state['bot_state'] = "comfirmInfo"
-        status_text = update_status_display()
-        return status_text
+        update_status_display()
 
     def update_person_data(self):
         st.session_state['last_bot_state'] = "changeInfo"
@@ -390,8 +384,7 @@ class Chatbot:
         display_chat()
         time.sleep(bot)
         st.session_state['bot_state'] = "changeInfo"
-        status_text = update_status_display()
-        return status_text
+        update_status_display()
 
 
 chatbot = Chatbot()
@@ -492,7 +485,11 @@ def update_status_display():
         "learning_mode": "โหมดการเรียนรู้(พูดได้เลย)"
     }
 
-    
+    if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
+        print(f"check: {st.session_state['auto_start']} and {st.session_state['auto']}")
+        if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
+            st.rerun()
+
     status_placeholder.markdown(
         f"""
         <div style="text-align: center; padding: 5px; border-radius: 5px; background-color: {status_colors[status_text]}; color: white; font-size: 18px; font-weight: bold;">
@@ -760,20 +757,14 @@ if selected == "Home":
                         display_chat()
                         time.sleep(bot)
                         st.session_state["bot_state"] = "learning_confirm"
-                        status_text = update_status_display()
-                        if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                                if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                                    st.rerun()
+                        update_status_display()
                         
                     else:
                         bot = update_chat_history("",chatbot_response)
                         display_chat()
                         time.sleep(bot)
                         st.session_state["bot_state"] = "active"
-                        status_text = update_status_display()
-                        if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                                if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                                    st.rerun()
+                        update_status_display()
             
             elif st.session_state["bot_state"] == "learning_confirm":
                 audio_txt = audio_text(microphone_st)
@@ -794,6 +785,7 @@ if selected == "Home":
                             display_chat()
                             time.sleep(bot)
                             st.session_state['bot_state'] = "learning_mode"
+                            update_status_display()
                             
                         elif "ใช่" in text or text == "ครับ" or text == "คะ" or text == "ค่ะ" or "ถูก" in text:
                             st.session_state['updateInfo_stage'] = None
@@ -815,6 +807,7 @@ if selected == "Home":
                             display_chat()
                             time.sleep(bot)
                             st.session_state['bot_state'] = "active"
+                            update_status_display()
 
                         else:
                             st.session_state['updateInfo_stage'] = "comfirmUpdate_learning"
@@ -828,11 +821,7 @@ if selected == "Home":
                             display_chat()
                             time.sleep(bot)
                             st.session_state["bot_state"] = "learning_confirm"
-
-                        status_text = update_status_display()
-                        if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                                if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                                    st.rerun()
+                            update_status_display()
                             
                     else:
                         if "ไม่ต้องการ" in text or "ไม่อยากสอน" in text or text == "ไม่" or "ไม่สอน" in text or "ไม่ครับ" in text or "ไม่คะ" in text or "ไม่ค่ะ" in text:
@@ -847,6 +836,7 @@ if selected == "Home":
                             display_chat()
                             time.sleep(bot)
                             st.session_state["bot_state"] = "active"
+                            update_status_display() 
 
                         elif "ใช่" in text or text == "ครับ" or text == "คะ" or text == "ค่ะ" or "ต้องการ" in text:
                             st.session_state['last_bot_state'] = "learning_mode"
@@ -860,6 +850,7 @@ if selected == "Home":
                             display_chat()
                             time.sleep(bot)
                             st.session_state["bot_state"] = "learning_mode"
+                            update_status_display()
 
                         else:
                             st.session_state['last_bot_state'] = "learning_confirm"
@@ -872,11 +863,7 @@ if selected == "Home":
                             display_chat()
                             time.sleep(bot)
                             st.session_state['bot_state'] = "learning_confirm"
-
-                        status_text = update_status_display()
-                        if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                                if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                                    st.rerun()
+                            update_status_display()
 
             elif st.session_state["bot_state"] == "learning_mode":
                 audio_txt = audio_text(microphone_st)
@@ -895,10 +882,7 @@ if selected == "Home":
                     display_chat()
                     time.sleep(bot)
                     st.session_state["bot_state"] = "learning_confirm"
-                    status_text = update_status_display()
-                    if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                        if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                            st.rerun()
+                    update_status_display()
 
             elif st.session_state["bot_state"] == "greeting":
                 audio_txt = audio_text(microphone_st)
@@ -916,10 +900,7 @@ if selected == "Home":
                         display_chat()
                         time.sleep(bot)
                         st.session_state["bot_state"] = "new_name"
-                        status_text = update_status_display()
-                        if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                                if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                                    st.rerun()
+                        update_status_display()
                     elif "ใช่" in text or text == "ครับ" or text == "คะ" or text == "ค่ะ":
                         st.session_state['last_bot_state'] = "active"
                         st.session_state["bot_state"] = "prepare"
@@ -927,10 +908,7 @@ if selected == "Home":
                         update_chat_history(text, "")
                         display_chat()
                         chatbot.add_to_history_bot_fisrt(st.session_state['greeting_response'], text)
-                        status_text = chatbot.check_birthday()
-                        if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                            if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                                st.rerun()
+                        chatbot.check_birthday()
                     else:
                         update_chat_history(text, "")
                         display_chat()
@@ -943,10 +921,7 @@ if selected == "Home":
                         display_chat()
                         time.sleep(bot)
                         st.session_state['bot_state'] = "greeting"
-                        status_text = update_status_display()
-                        if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                                if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                                    st.rerun()
+                        update_status_display()
 
             elif st.session_state["bot_state"] == "new_name":
                 audio_txt = audio_text(microphone_st)
@@ -971,6 +946,7 @@ if selected == "Home":
                         display_chat()
                         time.sleep(bot)
                         st.session_state["bot_state"] = "comfirmInfo"
+                        update_status_display()
                     else:
                         st.session_state['last_bot_state'] = "new_school"
                         st.session_state["bot_state"] = "prepare"
@@ -987,11 +963,7 @@ if selected == "Home":
                         display_chat()
                         time.sleep(bot)
                         st.session_state["bot_state"] = "new_school"
-                    
-                    status_text = update_status_display()
-                    if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                        if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                            st.rerun()
+                        update_status_display()
 
             elif st.session_state["bot_state"] == "new_school":
                 audio_txt = audio_text(microphone_st)
@@ -1017,6 +989,7 @@ if selected == "Home":
                         display_chat()
                         time.sleep(bot)
                         st.session_state["bot_state"] = "comfirmInfo"
+                        update_status_display()
                     else:
                         st.session_state['last_bot_state'] = "new_birthday"
                         update_chat_history(text, "")
@@ -1034,10 +1007,7 @@ if selected == "Home":
                         display_chat()
                         time.sleep(bot)
                         st.session_state["bot_state"] = "new_birthday"
-                    status_text = update_status_display()
-                    if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                        if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                            st.rerun()
+                        update_status_display()
 
             elif st.session_state["bot_state"] == "new_birthday":
                 audio_txt = audio_text(microphone_st)
@@ -1062,10 +1032,7 @@ if selected == "Home":
                         display_chat()
                         time.sleep(bot)
                         st.session_state["bot_state"] = "comfirmInfo"
-                        status_text = update_status_display()
-                        if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                                if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                                    st.rerun()
+                        update_status_display()
                     else:
                         st.session_state['last_bot_state'] = "comfirmInfo"
                         st.session_state["bot_state"] = "prepare"
@@ -1081,10 +1048,7 @@ if selected == "Home":
 
                         chatbot.person_data = chatbot.load_person_data()
 
-                        status_text = chatbot.review_person_data()
-                        if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                            if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                                st.rerun()
+                        chatbot.review_person_data()
             
             elif st.session_state["bot_state"] == "comfirmInfo":
                 audio_txt = audio_text(microphone_st)
@@ -1105,6 +1069,7 @@ if selected == "Home":
                                 display_chat()
                                 time.sleep(bot)
                                 st.session_state['bot_state'] = "new_name"
+                                update_status_display()
 
                             elif st.session_state['updateInfo_stage'] == "comfirmUpdate_school":
                                 st.session_state['last_bot_state'] = "new_school"
@@ -1114,6 +1079,7 @@ if selected == "Home":
                                 display_chat()
                                 time.sleep(bot)
                                 st.session_state['bot_state'] = "new_school"
+                                update_status_display()
 
                             elif st.session_state['updateInfo_stage'] == "comfirmUpdate_birthday":
                                 st.session_state['last_bot_state'] = "new_birthday"
@@ -1123,11 +1089,7 @@ if selected == "Home":
                                 display_chat()
                                 time.sleep(bot)
                                 st.session_state['bot_state'] = "new_birthday"
-                            
-                            status_text = update_status_display()
-                            if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                                if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                                    st.rerun()
+                                update_status_display()
 
                         elif "ใช่" in text or text == "ครับ" or text == "คะ" or text == "ค่ะ" or "ถูก" in text:
                             st.session_state['last_bot_state'] = "active"
@@ -1141,7 +1103,7 @@ if selected == "Home":
                                 chatbot.add_to_history_bot_fisrt(f"เข้าใจแล้วค่ะ! สวัสดีค่ะ ท่าน{chatbot.person_data[selected_person].get('name')}", "-")
                                 display_chat()
                                 time.sleep(bot)
-                                
+                                chatbot.check_birthday()
                             elif st.session_state['updateInfo_stage'] == "comfirmUpdate_nickname":
                                 st.session_state['updateInfo_stage'] = None
                                 chatbot.add_to_history_bot_fisrt(f"โรงเรียนของท่านคือ {chatbot.person_data[selected_person].get('school')} ถูกต้องใช่มั้ยคะ?", text)
@@ -1149,7 +1111,7 @@ if selected == "Home":
                                 chatbot.add_to_history_bot_fisrt(f"เข้าใจแล้วค่ะ! สวัสดีค่ะ ท่าน{chatbot.person_data[selected_person].get('name')}", "-")
                                 display_chat()
                                 time.sleep(bot)
-                                
+                                chatbot.check_birthday()
                             elif st.session_state['updateInfo_stage'] == "comfirmUpdate_birthday":
                                 st.session_state['updateInfo_stage'] = None
                                 chatbot.add_to_history_bot_fisrt(f"ท่านเกิด {chatbot.person_data[selected_person].get('birthday')} ถูกต้องใช่มั้ยคะ?", text)
@@ -1157,11 +1119,7 @@ if selected == "Home":
                                 chatbot.add_to_history_bot_fisrt(f"เข้าใจแล้วค่ะ! ท่านเกิด {chatbot.person_data[selected_person].get('birthday')}", "-")
                                 display_chat()
                                 time.sleep(bot)
-                                
-                            status_text = chatbot.check_birthday()
-                            if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                                if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                                    st.rerun()
+                                chatbot.check_birthday()
                         
                         else:
                             st.session_state['last_bot_state'] = "comfirmInfo"
@@ -1188,10 +1146,7 @@ if selected == "Home":
                                 display_chat()
                                 time.sleep(bot)
                             st.session_state['bot_state'] = "comfirmInfo"
-                            status_text = update_status_display()
-                            if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                                if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                                    st.rerun()
+                            update_status_display()
                     else:
                         if "ขออีก" in text or "ทวน" in text or "พูดอีก" in text or "พูดใหม่" in text or "ขอใหม่" in text:
                             update_chat_history(text, "")
@@ -1206,19 +1161,13 @@ if selected == "Home":
                             display_chat()
                             time.sleep(bot)
                             st.session_state['bot_state'] = "comfirmInfo"
-                            status_text = update_status_display()
-                            if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                                    if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                                        st.rerun()
+                            update_status_display()
 
                         if "ไม่ถูก" in text or "ไม่ใช่" in text or text == "ไม่" or "ไม่ครับ" in text or "ไม่คะ" in text or "ไม่ค่ะ" in text:
                             update_chat_history(text, "")
                             display_chat()
                             chatbot.add_to_history_bot_fisrt(st.session_state['comfirmInfo_response'], text)
-                            status_text = chatbot.update_person_data()
-                            if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                                if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                                    st.rerun()
+                            chatbot.update_person_data()
                             
                         elif "ใช่" in text or text == "ครับ" or text == "คะ" or text == "ค่ะ" or "ถูก" in text:
                             st.session_state['last_bot_state'] = "active"
@@ -1233,10 +1182,7 @@ if selected == "Home":
                             bot = update_chat_history("", response)
                             display_chat()
                             time.sleep(bot)
-                            status_text = chatbot.check_birthday()
-                            if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                                if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                                    st.rerun()
+                            chatbot.check_birthday()
                         else:
                             st.session_state['last_bot_state'] = "comfirmInfo"
                             update_chat_history(text, "")
@@ -1249,10 +1195,7 @@ if selected == "Home":
                             display_chat()
                             time.sleep(bot)
                             st.session_state['bot_state'] = "comfirmInfo"
-                            status_text = update_status_display()
-                            if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                                if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                                    st.rerun()
+                            update_status_display()
 
             elif st.session_state["bot_state"] == "changeInfo":
                 audio_txt = audio_text(microphone_st)
@@ -1271,7 +1214,7 @@ if selected == "Home":
                         display_chat()
                         time.sleep(bot)
                         st.session_state["bot_state"] = "new_school"
-                        
+                        update_status_display()
                     elif "วันเกิด" in text:
                         st.session_state['last_bot_state'] = "new_birthday"
                         st.session_state['updateInfo_stage'] = "birthday"
@@ -1284,6 +1227,7 @@ if selected == "Home":
                         display_chat()
                         time.sleep(bot)
                         st.session_state["bot_state"] = "new_birthday"
+                        update_status_display()
 
                     elif "ชื่อ" in text:
                         st.session_state['last_bot_state'] = "new_name"
@@ -1297,6 +1241,7 @@ if selected == "Home":
                         display_chat()
                         time.sleep(bot)
                         st.session_state["bot_state"] = "new_name"
+                        update_status_display()
 
                     else:
                         st.session_state['last_bot_state'] = "changeInfo"
@@ -1310,11 +1255,7 @@ if selected == "Home":
                         display_chat()
                         time.sleep(bot)
                         st.session_state['bot_state'] = "changeInfo"
-
-                    status_text = update_status_display()
-                    if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
-                        if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                            st.rerun()
+                        update_status_display()
 
     else:
         st.write("ไม่มีข้อมูลอาจารย์ในระบบตอนนี้")
