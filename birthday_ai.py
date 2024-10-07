@@ -14,7 +14,6 @@ import io
 from streamlit_option_menu import option_menu
 from ai_thinking import calculate_ai, word_translator
 import requests
-from auto_click import click_start_mic
 
 class Chatbot:
     def __init__(self):
@@ -452,10 +451,8 @@ if 'learning_answer' not in st.session_state:
 if 'unknown_question' not in st.session_state:
     st.session_state['unknown_question'] = None
 
-
 if "check_state_rerun" not in st.session_state:
     st.session_state['check_state_rerun'] = False
-
 
 def update_status_display():
     status_text = st.session_state['bot_state']
@@ -487,16 +484,10 @@ def update_status_display():
         "learning_mode": "โหมดการเรียนรู้(พูดได้เลย)"
     }
 
-
-    if status_text == "greeting" or status_text == "active" or status_text == "new_name":
-        if st.session_state['auto'] == True:
-            print("y") 
-        else:
-            print(f"check: {st.session_state['auto_start']} and {st.session_state['auto']}")
-            if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
-                st.rerun()
-    else:
-        pass
+    if status_text == "greeting" or status_text == "active" or status_text == "new_name" or status_text == "new_school" or status_text == "new_birthday" or status_text == "comfirmInfo" or status_text == "changeInfo" or status_text == "learning_confirm" or status_text == "learning_mode":
+        print(f"check: {st.session_state['auto_start']} and {st.session_state['auto']}")
+        if st.session_state['auto_start'] == False and st.session_state['auto'] == False:
+            st.rerun()
 
     status_placeholder.markdown(
         f"""
@@ -624,8 +615,7 @@ if selected == "Home":
                     st.session_state['auto'] = False
                 else:
                     if st.session_state['auto'] == False and st.session_state["auto_start"] == True:
-                        print("to comfirm")
-                        pass
+                        print("not restart")
                     else:
                         print("restart")
                         st.session_state["auto_start"] = True
